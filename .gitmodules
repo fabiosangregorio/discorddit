@@ -1,0 +1,4 @@
+[submodule "pyreddit"]
+	path = pyreddit
+	url = https://github.com/fabiosangregorio/pyreddit
+	branch = master
