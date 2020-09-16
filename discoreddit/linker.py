@@ -1,7 +1,5 @@
 """Linker class which handles all telereddit requests."""
 
-import logging
-
 from discord import Client, Embed
 from .config.config import (
     MAX_TRIES,
@@ -71,7 +69,9 @@ class Linker:
         """
         for _ in range(MAX_TRIES):
             try:
-                return await self.send_post(helpers.get_random_post_url(subreddit))
+                return await self.send_post(
+                    helpers.get_random_post_url(subreddit)
+                )
             except (RedditError, DiscoredditError) as e:
                 err = e
                 if isinstance(e, SubredditError):
@@ -129,7 +129,10 @@ class Linker:
                 type="rich",
             )
             embed.add_field(name="** **", value=post.get_footer())
-            if any(post.get_type() == c for c in [ContentType.PHOTO, ContentType.GIF]):
+            if any(
+                post.get_type() == c
+                for c in [ContentType.PHOTO, ContentType.GIF]
+            ):
                 assert post.media is not None
                 embed.set_image(url=post.media.url)
 

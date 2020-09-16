@@ -1,0 +1,51 @@
+name: test
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    types: [opened, synchronize, repoened, edited]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master 
+
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+      
+    - name: Cache dependencies
+      uses: actions/cache@v1
+      with:
+        path: ~/.cache/pip # This path is specific to Ubuntu
+        key: ${{ runner.os }}-pip-${{ hashFiles('./requirements/requirements.txt') }}-${{ hashFiles('**/test.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        pip install -r ./requirements/requirements.txt
+        pip install -r ./requirements/test.txt
+
+    - name: Run tests and generate report
+      run: | 
+        coverage run -m unittest
+      env:
+        discoreddit_MACHINE: 'GITHUB'
+
+    - name: Upload reports to Coveralls
+      env: 
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      run: |
+        coveralls
+
+    - name: Upload reports to Code Climate
+      uses: paambaati/codeclimate-action@v2.6.0
+      with:
+        coverageCommand: coverage xml
+      env:
+        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}

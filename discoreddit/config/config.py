@@ -6,10 +6,6 @@ Project-wide configuration variables.
     for a leaner one.
 """
 
-import os
-import importlib
-import logging
-
 MAX_TRIES = 4
 MAX_MEDIA_SIZE = 20000000
 MAX_POST_LENGTH = 500

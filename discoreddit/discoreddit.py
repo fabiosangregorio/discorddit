@@ -9,15 +9,16 @@ messages and dispatch actions to the other modules.
 
 import logging
 from typing import List
+import os
 
 import sentry_sdk
 import discord
+from dotenv import load_dotenv
 
 from pyreddit.pyreddit import helpers
 from .linker import Linker
 from .config import config
 from pyreddit.pyreddit.services.services_wrapper import ServicesWrapper
-from pyreddit.pyreddit.config.config import load_secret as pyreddit_load_secret
 
 
 class DiscoredditClient(discord.Client):
@@ -55,11 +56,18 @@ def main() -> None:
         level=logging.INFO,
     )
 
-    config.load_secret()
-    pyreddit_load_secret(config.secret)
+    env = os.getenv("REDDIT_BOTS_MACHINE")
+    if env is None or len(env) == 0:
+        raise Exception("No REDDIT_BOTS_MACHINE env variable found.")
 
-    if config.SENTRY_ENABLED:
-        sentry_sdk.init(config.secret.SENTRY_TOKEN, environment=config.ENV)
+    load_dotenv(
+        dotenv_path=os.path.join(
+            os.path.dirname(__file__), f"config/{env.lower()}.env"
+        )
+    )
+
+    if os.getenv("SENTRY_TOKEN"):
+        sentry_sdk.init(os.getenv("SENTRY_TOKEN"), environment=env)
 
     ServicesWrapper.init_services()
 
@@ -67,4 +75,4 @@ def main() -> None:
     Linker.set_bot(client)
 
     print("Listening...")
-    client.run(config.secret.DISCORD_TOKEN)
+    client.run(os.getenv("DISCORD_TOKEN"))
